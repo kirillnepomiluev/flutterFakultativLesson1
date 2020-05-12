@@ -1,7 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-import 'MainPage.dart';
+import 'ui/pages/MainPage.dart';
+import 'main.dart';
 
 class SignInPage extends StatefulWidget {
   @override
@@ -10,14 +13,128 @@ class SignInPage extends StatefulWidget {
 
 class _SignInPageState extends State<SignInPage> {
   bool isCodeSend = false;
-  TextEditingController controller = TextEditingController();
-
+  TextEditingController controllerCode = TextEditingController();
+  TextEditingController controllerPhoneNumber = TextEditingController();
+  String _verificationId;
+  bool isPhoneNumberFull=false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
   }
+  void _onVerifyCode() async {
+    setState(() {
+      isCodeSend = true;
+    });
+    final PhoneVerificationCompleted verificationCompleted =
+        (AuthCredential phoneAuthCredential) {
+      auth
+          .signInWithCredential(phoneAuthCredential)
+          .then((AuthResult value) {
+        if (value.user != null) {
+          user =value.user;
+          // Handle loogged in state
+          print(value.user.phoneNumber);
+          if (value.user.displayName != null) {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        MainPage(
+                        )));
+          } else {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        MainPage(
+                        )));
+          }
+        } else {
+          showToast("error_validation_otp");
+        }
+      }).catchError((error) {
+        showToast(error.toString());
+      });
+    };
+    final PhoneVerificationFailed verificationFailed =
+        (AuthException authException) {
+      showToast(authException.message,color: Colors.red);
+      setState(() {
+        isCodeSend = false;
+      });
+    };
+
+    final PhoneCodeSent codeSent =
+        (String verificationId, [int forceResendingToken]) async {
+      _verificationId = verificationId;
+      setState(() {
+        _verificationId = verificationId;
+      });
+    };
+    final PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout =
+        (String verificationId) {
+      _verificationId = verificationId;
+      setState(() {
+        _verificationId = verificationId;
+      });
+    };
+
+    // TODO: Change country code
+
+    await auth.verifyPhoneNumber(
+        phoneNumber: "+${controllerPhoneNumber.text}",
+        timeout: const Duration(seconds: 60),
+        verificationCompleted: verificationCompleted,
+        verificationFailed: verificationFailed,
+        codeSent: codeSent,
+        codeAutoRetrievalTimeout: codeAutoRetrievalTimeout);
+  }
+  void showToast(message, {Color color= Colors.black}) {
+    print(message);
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: color,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  }
+  void _onFormSubmitted() async {
+    AuthCredential _authCredential = PhoneAuthProvider.getCredential(
+        verificationId: _verificationId, smsCode: controllerCode.text);
+
+    auth
+        .signInWithCredential(_authCredential)
+        .then((AuthResult value) {
+      if (value.user != null) {
+        user = value.user;
+        // Handle loogged in state
+        print(value.user.phoneNumber);
+        if (value.user.displayName != null) {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      MainPage()
+));
+        } else {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      MainPage()));
+        }
+      } else {
+        showToast("error_validation_otp", color: Colors.red);
+      }
+    }).catchError((error) {
+      showToast("something_went_wrong");
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -25,61 +142,73 @@ class _SignInPageState extends State<SignInPage> {
       appBar: AppBar(
         title: Text(
           "Регистрация",
-          style: TextStyle(color: Colors.black38),
+          style: Theme.of(context).textTheme.headline3,
         ),
-        backgroundColor: Colors.greenAccent,
+        backgroundColor: Theme.of(context).appBarTheme.color,
       ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: isCodeSend?
-          Container(
-            height: 400,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                TextFormField(
-                  controller: controller,
-                  decoration:
-                  InputDecoration(labelText: "Код из СМС", hintText: "код из смс"),
-                ),
-                FlatButton(
-                  color: Colors.greenAccent,
-                  onPressed: () {
-                   Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-                     return MainPage();
-                   }));
-                  },
-                  child: Text("Проверить код",
-                    style: TextStyle(color: Colors.black38),),
+          child: isCodeSend
+              ? Container(
+                  height: 400,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      TextFormField(
+                        controller: controllerCode,
+                        decoration: InputDecoration(
+                            labelText: "Код из СМС", hintText: "код из смс"),
+                      ),
+                      FlatButton(
+                        color: Theme.of(context).accentColor,
+                        onPressed: () {
+
+                          _onFormSubmitted();
+                        },
+                        child: Text(
+                          "Проверить код",
+                          style: Theme.of(context).textTheme.headline6,
+                        ),
+                      )
+                    ],
+                  ),
                 )
-              ],
-            ),
-          )
-              :  Container(
-            height: 400,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                TextFormField(
-                  controller: controller,
-                  decoration:
-                      InputDecoration(labelText: "Номер телефона", hintText: "+7"),
+              : Container(
+                  height: 400,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      TextFormField(
+                        onChanged: (value) {
+                          if (value=="8") controllerPhoneNumber.text = "7";
+                           setState(() {
+                             isPhoneNumberFull = value.length > 10;
+                           });
+                        },
+                        controller: controllerPhoneNumber,
+                        decoration: InputDecoration(
+                            labelText: "Номер телефона", hintText: ""),
+                      ),
+                     Opacity (opacity: isPhoneNumberFull? 1.0 : 0.4,
+                     child:                      FlatButton(
+                       color: Theme.of(context).accentColor,
+                       onPressed: () {
+                         if ( isPhoneNumberFull) {
+                           setState(() {
+                             _onVerifyCode();
+                           });
+                         }
+                       },
+                       child: Text(
+                         "Получить смс с кодом",
+                         style: Theme.of(context).textTheme.headline6,
+                       ),
+                     )
+                     )
+                    ],
+                  ),
                 ),
-                FlatButton(
-                  color: Colors.greenAccent,
-                  onPressed: () {
-                    setState(() {
-                      isCodeSend = true;
-                      controller.text = "";
-                    });
-                  },
-                  child: Text("Получить смс с кодом",
-                      style: TextStyle(color: Colors.black38),),
-                )
-              ],
-            ),
-          ),
         ),
       ),
     );
