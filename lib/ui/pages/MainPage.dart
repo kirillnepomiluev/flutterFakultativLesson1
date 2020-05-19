@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterapp/blocs.dart';
 import 'package:flutterapp/main.dart';
 import 'package:flutterapp/ui/widgets/drawer.dart';
 
@@ -26,48 +27,53 @@ class _MainPageState extends State<MainPage> {
         string = controllerMainPage.text;
       });
     });
-
-    firestore
-        .collection("chats")
-        // .document("ид конкретного чата")     это нжуно что бы достать сообщения конкретного чата, как пример
-        // .collection("messages")
-
-        // .limit(100) - если нужно определенно количество чатов
-        // .where("private", isEqualTo: true)  - если нужны только приватные чаты
-        .snapshots()
-        .listen((event) {
-      // тело этого метода срабатает асинхронно при любом изменении в коллекции "chats"  и один раз в самомо начале
-      List<Map<String, dynamic>> data = [];
-      // если нужны только новые чаты
-      event.documentChanges.forEach((element) {
-        if (element.type == DocumentChangeType.added) {
-          data.add(element.document.data);
-        }
-      });
-      // если нужны изменные  чаты
-      event.documentChanges.forEach((element) {
-        if (element.type == DocumentChangeType.modified) {
-          data.insert(
-              data.indexOf(element.document.data), element.document.data);
-        }
-      });
-      // если нужны удаленные  чаты
-      event.documentChanges.forEach((element) {
-        if (element.type == DocumentChangeType.removed) {
-          data.remove(element.document.data);
-        }
-      });
-      // если нужны все чаты
-      event.documents.forEach((documentSnapshot) {
-        data.add(documentSnapshot.data);
-      });
-
-      setState(() {
-        dataChats = data;
-      });
-    });
+    bloc.fetchAllMovies();
+//    firestore
+//        .collection("chats")
+//        // .document("ид конкретного чата")     это нжуно что бы достать сообщения конкретного чата, как пример
+//        // .collection("messages")
+//
+//        // .limit(100) - если нужно определенно количество чатов
+//        // .where("private", isEqualTo: true)  - если нужны только приватные чаты
+//        .snapshots()
+//        .listen((event) {
+//      // тело этого метода срабатает асинхронно при любом изменении в коллекции "chats"  и один раз в самомо начале
+//      List<Map<String, dynamic>> data = [];
+//      // если нужны только новые чаты
+//      event.documentChanges.forEach((element) {
+//        if (element.type == DocumentChangeType.added) {
+//          data.add(element.document.data);
+//        }
+//      });
+//      // если нужны изменные  чаты
+//      event.documentChanges.forEach((element) {
+//        if (element.type == DocumentChangeType.modified) {
+//          data.insert(
+//              data.indexOf(element.document.data), element.document.data);
+//        }
+//      });
+//      // если нужны удаленные  чаты
+//      event.documentChanges.forEach((element) {
+//        if (element.type == DocumentChangeType.removed) {
+//          data.remove(element.document.data);
+//        }
+//      });
+//      // если нужны все чаты
+//      event.documents.forEach((documentSnapshot) {
+//        data.add(documentSnapshot.data);
+//      });
+//
+//      setState(() {
+//        dataChats = data;
+//      });
+//    });
 
     super.initState();
+  }
+  @override
+  void dispose() {
+    bloc.dispose();
+    super.dispose();
   }
 
   // TODO  нужно создать экран где будет испоьзоваться этот  метод для создания нового чата и нужно использовать TextFormField
@@ -84,12 +90,17 @@ class _MainPageState extends State<MainPage> {
           });
     });
   }
+
   createNewUser(BuildContext context, Map<String, dynamic> newUser) {
-    Map <String, dynamic> newUserData = {
+    Map<String, dynamic> newUserData = {
       "id": user.uid,
       "name": "имя",
     };
-    firestore.collection("chats").document(user.uid).setData(newUserData).then((value) {
+    firestore
+        .collection("chats")
+        .document(user.uid)
+        .setData(newUserData)
+        .then((value) {
       showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -102,41 +113,52 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-      drawer: MainDrawer(),
-      drawerDragStartBehavior: DragStartBehavior.down,
-
-      appBar: AppBar(
-        title: Text(
-          "Наш Чат",
-          style: Theme.of(context).textTheme.headline3,
+        drawer: MainDrawer(),
+        drawerDragStartBehavior: DragStartBehavior.down,
+        appBar: AppBar(
+          title: Text(
+            "Наш Чат",
+            style: Theme.of(context).textTheme.headline3,
+          ),
         ),
-      ),
-      body: Container(
-        child: controllerMainPage.text != "asd"
-            ? FlatButton(
-                onPressed: () { controllerMainPage.text="asd"; },
-                child: Text(controllerMainPage.text),
-              )
-            : Center(
-                child: dataChats.isEmpty
-                    ? Text("идет загрузка")
-                    : ListView.builder(
-                        itemCount: dataChats.length,
-                        itemBuilder: (BuildContext context, int item) {
-                          return buildInkWell(context,
-                              message: dataChats[item]["message"].toString(),
-                              title: dataChats[item]["message"].toString(),
-                              isPrivate: dataChats[item]["private"]);
-                        },
-                      ),
-              ),
-      ),
-    );
+        body: Container(
+            child: Center(
+              child: StreamBuilder(
+          stream: bloc.allMovies,
+          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+              return Text(snapshot.data.toString(), textAlign: TextAlign.center, style: TextStyle( fontSize: 25),);
+          },
+        ),
+            ))
+
+//
+//      Container(
+//        child: controllerMainPage.text != "asd"
+//            ? FlatButton(
+//                onPressed: () { controllerMainPage.text="asd"; },
+//                child: Text(controllerMainPage.text),
+//              )
+//            : Center(
+//                child:
+//
+//
+//                dataChats.isEmpty
+//                    ? Text("идет загрузка")
+//                    : ListView.builder(
+//                        itemCount: dataChats.length,
+//                        itemBuilder: (BuildContext context, int item) {
+//                          return buildInkWell(context,
+//                              message: dataChats[item]["message"].toString(),
+//                              title: dataChats[item]["message"].toString(),
+//                              isPrivate: dataChats[item]["private"]);
+//                        },
+//                      ),
+//              ),
+//      ),
+        );
   }
 
   Widget buildInkWell(BuildContext context,

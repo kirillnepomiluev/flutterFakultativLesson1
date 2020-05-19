@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterapp/page2ios.dart';
 import 'package:flutterapp/themes/custom_theme.dart';
 import 'package:flutterapp/themes/themes.dart';
+import 'package:flutterapp/ui/pages/MainPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -38,7 +39,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Наш чат',
       theme: CustomTheme.of(context),
-      home: SignInPage(),
+      home: MainPage(),
 //      MyHomePage(title: 'чат -приложение'),
     );
   }
