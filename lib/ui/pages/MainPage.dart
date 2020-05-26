@@ -129,7 +129,11 @@ class _MainPageState extends State<MainPage> {
               child: StreamBuilder(
           stream: bloc.allMovies,
           builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-              return Text(snapshot.data.toString(), textAlign: TextAlign.center, style: TextStyle( fontSize: 25),);
+              return Opacity( 
+                opacity: (snapshot.data/180< 1.0)? snapshot.data/180: 1.0 ,
+                child: Container( color:  Colors.green, height: 100 + snapshot.data/1,  width:100 + snapshot.data/2,
+                  margin: EdgeInsets.fromLTRB(10.0 +snapshot.data/2, 10.0, 10.0, 10.0), ),
+              );
           },
         ),
             ))

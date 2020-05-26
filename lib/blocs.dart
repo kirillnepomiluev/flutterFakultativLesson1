@@ -12,8 +12,8 @@ class TasksBloc {
   }
   Stream<int> getRandomValues() async* {
       int value = 0;
-    while (!_isDisposed) {
-      await Future.delayed(Duration(seconds: 1));
+    while (!_isDisposed && value <= 180) {
+      await Future.delayed(Duration(milliseconds: (1000/60).round()));
       value++;
       yield value;
     }
