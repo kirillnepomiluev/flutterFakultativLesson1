@@ -24,11 +24,8 @@ class MainDrawer extends StatelessWidget {
        ListTile (title: Text( "Профиль"),
          leading: Icon(Icons.account_circle) ,
          onTap: () {
-           Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-             return ProfilePage();
-           }));
+           Navigator.of(context).pushNamed("/profile");
          },
-
        )
 
      ],),

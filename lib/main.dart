@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterapp/page2ios.dart';
+import 'package:flutterapp/router.dart';
 import 'package:flutterapp/themes/custom_theme.dart';
 import 'package:flutterapp/themes/themes.dart';
 import 'package:flutterapp/ui/pages/MainPage.dart';
@@ -39,7 +40,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Наш чат',
       theme: CustomTheme.of(context),
-      home: SignInPage(),
+      initialRoute: "/sign_in",
+      onGenerateRoute: Router.generateRoute,
 //      MyHomePage(title: 'чат -приложение'),
     );
   }
