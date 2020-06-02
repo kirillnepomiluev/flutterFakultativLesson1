@@ -203,6 +203,19 @@ class _MainPageState extends State<MainPage> {
   }
 
   void getuser() {
-    auth.currentUser().then((value) => user = value);
+    auth.currentUser().then((value) {
+      user = value;
+      firestore.collection('users').document(user.uid).get().then((value) {
+        if (value.data == null) {
+          firestore.collection('users').document(user.uid).setData({
+            "id" : user.uid
+          });
+        }
+        else {
+
+        }
+      });
+
+    });
   }
 }

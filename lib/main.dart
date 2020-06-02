@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Наш чат',
       theme: CustomTheme.of(context),
-      home: MainPage(),
+      home: SignInPage(),
 //      MyHomePage(title: 'чат -приложение'),
     );
   }
@@ -82,7 +82,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return  Scaffold(
       appBar: AppBar(
-
         title: Text(widget.title, style: TextStyle(color: Colors.black38),),
         backgroundColor: Colors.greenAccent,
       ),

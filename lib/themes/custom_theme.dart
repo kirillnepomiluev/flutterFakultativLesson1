@@ -66,6 +66,8 @@ class CustomThemeState extends State<CustomTheme> {
       _theme = MyThemes.getThemeFromKey(themeKey);
       mythemeKey=themeKey;
       prefs.setBool("isDarkTeme", mythemeKey == MyThemeKeys.DARK);
+      prefs.setString("myKey", "fkjgfkgjkfj");
+      String s = prefs.getString("myKey");
     });
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterapp/themes/custom_theme.dart';
 import 'package:flutterapp/themes/themes.dart';
+import 'package:flutterapp/ui/pages/ProfilePage.dart';
 
 class MainDrawer extends StatelessWidget {
   void _changeTheme(BuildContext buildContext, {MyThemeKeys key}) {
@@ -19,7 +20,17 @@ class MainDrawer extends StatelessWidget {
          onTap: () {
            _changeTheme(context);
          },
+       ),
+       ListTile (title: Text( "Профиль"),
+         leading: Icon(Icons.account_circle) ,
+         onTap: () {
+           Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+             return ProfilePage();
+           }));
+         },
+
        )
+
      ],),
    );
   }
